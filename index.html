@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./lib/jquery.dataTables.min.css">
+</head>
+<body>
+    <div id="content"></div>
+</body>
+
+<script src="./script.js"></script>
+<script src="./lib/jquery-3.6.0.min.js"></script>
+<script src="./lib/jquery.dataTables.min.js"></script>
+
+<script>
+    // Document ready affiche le contenu de la page une fois que le DOM est chargé
+    $(document).ready(function() {
+        // read data from the file "./resources/properties.csv" and print it using Ajax
+        // (1) create an instance of XMLHttpRequest object
+        const xhttp = new XMLHttpRequest();
+        // (2) define the callback function
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                // (4) when readyState is 4 and status is 200, the response is ready
+                // (5) print the response using DOM manipulation
+                // (6) get the div element with id="demo"
+                const div = $("#content");
+    
+                // (7) create DataTable object
+                const table = $('<table id="table" class="table table-striped table-bordered">')
+    
+                // response csv data to array
+                const data = this.responseText.split("\n");
+                const headers = data[0].split(";");
+                const body = data.slice(1);
+    
+                // create table header
+                const thead = $("<thead>");
+                table.append(thead);
+                const tr = $("<tr>");
+                thead.append(tr);
+                headers.forEach(header => {
+                    const th = $("<th>");
+                    th.html(header);
+                    tr.append(th);
+                });
+    
+                // create table body
+                const tbody = $("<tbody>");
+                table.append(tbody);
+                body.forEach(row => {
+                    const tr = $("<tr>");
+                    tbody.append(tr);
+                    const columns = row.split(";");
+                    columns.forEach(column => {
+                        const td = $("<td>");
+                        const div = $("<div class='row_data' edit_type='click' col_name='name'>");
+                        td.html(div.html(column));
+                        tr.append(td);
+                    });
+                });
+
+                $("#table").DataTable({
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+                    }
+                });
+
+                // (8) append the response to the div element
+                div.append(table);
+
+            }
+        };
+        // (3) open a connection to the server
+        xhttp.open("GET", "http://localhost:3000/api/file", true);
+        // (4) send the request
+        xhttp.send();
+    });
+
+    // add event listener to the field "search"
+    $(document).on('click', '.row_data', function(event) 
+    {
+        event.preventDefault(); 
+
+        if($(this).attr('edit_type') == 'button')
+        {
+            return false; 
+        }
+
+        //make div editable
+        $(this).closest('div').attr('contenteditable', 'true');
+        //add bg css
+        $(this).addClass('bg-warning').css('padding','5px');
+
+        $(this).focus();
+    })	
+
+    </script>
+</html>
